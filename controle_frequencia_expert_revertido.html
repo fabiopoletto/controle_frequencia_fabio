@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Frequência - Nível Expert</title>
+    <style>
+        :root {
+            --bg-body: #f4f6f9;
+            --bg-container: #ffffff;
+            --text-main: #333333;
+            --text-muted: #5f6368;
+            --border-color: #dadce0;
+            --primary-color: #0288d1;
+            --primary-hover: #0277bd;
+            --card-bg: #f8f9fa;
+            --input-bg: #ffffff;
+            --row-hover: #f1f3f4;
+        }
+
+        /* Classes para Modo Escuro (Apenas na Tela) */
+        body.dark-mode {
+            --bg-body: #121212;
+            --bg-container: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #333333;
+            --primary-color: #29b6f6;
+            --primary-hover: #4fc3f7;
+            --card-bg: #2d2d2d;
+            --input-bg: #252525;
+            --row-hover: #2a2a2a;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 30px 15px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: var(--bg-container);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+        
+        /* Topo */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .header-title h1 {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin: 0;
+            font-weight: 700;
+        }
+        .header-title p {
+            margin: 5px 0 0 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .meta-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .meta-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .meta-label {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .meta-input {
+            font-size: 14px;
+            color: var(--text-main);
+            background: var(--card-bg);
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+        }
+        .date-input {
+            font-weight: bold;
+            width: 120px;
+            text-align: center;
+        }
+        .sup-input {
+            width: 220px;
+        }
+        
+        /* Dashboard de Resumo / KPIs */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border-top: 4px solid #9e9e9e;
+        }
+        .card.card-total { border-top-color: var(--primary-color); }
+        .card.card-presenca { border-top-color: #2e7d32; }
+        .card.card-atraso { border-top-color: #fbc02d; }
+        .card.card-falta-j { border-top-color: #0288d1; }
+        .card.card-falta-i { border-top-color: #c62828; }
+        .card.card-abs { border-top-color: #721c24; }
+        
+        .card-value {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+        .card-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Barra de Ferramentas / Ações */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .search-container {
+            flex-grow: 1;
+            min-width: 250px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 16px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            outline: none;
+        }
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .btn {
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.15s, transform 0.05s;
+        }
+        .btn:active { transform: scale(0.98); }
+        
+        .btn-tool { background-color: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-tool:hover { background-color: var(--row-hover); }
+        
+        .btn-magic { background-color: #2e7d32; color: white; }
+        .btn-magic:hover { background-color: #1b5e20; }
+        
+        .btn-excel { background-color: #0f733c; color: white; }
+        .btn-excel:hover { background-color: #0c5e31; }
+
+        .btn-print { background-color: var(--primary-color); color: white; }
+        .btn-print:hover { background-color: var(--primary-hover); }
+        
+        /* Painel de Gerenciamento da Equipe (Escondido por padrão) */
+        .manage-panel {
+            background-color: var(--card-bg);
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .manage-panel.active { display: block; }
+        .manage-panel h3 { margin-top: 0; color: var(--primary-color); font-size: 16px; }
+        .manage-form { display: flex; gap: 10px; margin-bottom: 15px; }
+        .manage-input { flex-grow: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-main); }
+        .roster-list { display: flex; flex-wrap: wrap; gap: 8px; max-height: 150px; overflow-y: auto; padding: 5px; }
+        .roster-item { background: var(--input-bg); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 20px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+        .roster-remove { color: #c62828; cursor: pointer; font-weight: bold; }
+        
+        /* Tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.8px;
+        }
+        th:first-child { border-top-left-radius: 6px; }
+        th:last-child { border-top-right-radius: 6px; }
+        
+        tr:hover { background-color: var(--row-hover); }
+        
+        /* Cores de Destaque por Linha (Opacidade leve) */
+        tr.row-no_horario { background-color: rgba(46, 125, 50, 0.15) !important; }
+        tr.row-atrasado { background-color: rgba(251, 192, 45, 0.2) !important; }
+        tr.row-falta_justificada { background-color: rgba(2, 136, 209, 0.15) !important; }
+        tr.row-falta_injustificada { background-color: rgba(198, 40, 40, 0.15) !important; }
+        
+        .name-cell {
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 13px;
+        }
+        
+        select, .obs-input, .time-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            outline: none;
+            font-size: 13px;
+        }
+        select {
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%235f6368' d='M0 0l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 10px 6px;
+            padding-right: 20px;
+        }
+        .time-input {
+            text-align: center;
+            background-color: var(--bg-body);
+            opacity: 0.6;
+        }
+        .time-input.active {
+            background-color: var(--input-bg);
+            opacity: 1;
+            border-color: #fbc02d;
+        }
+        
+        /* Rodapé de Assinatura */
+        .footer-signature {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 20px;
+        }
+        .signature-line {
+            width: 300px;
+            border-bottom: 1px solid var(--text-main);
+            margin-bottom: 8px;
+        }
+        .signature-name {
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 14px;
+        }
+        .signature-role {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        .signature-timestamp {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* Créditos do Desenvolvedor Fábio Roberto Poletto */
+        .system-credits {
+            margin-top: 35px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-style: italic;
+            letter-spacing: 0.3px;
+        }
+        
+        /* CONFIGURAÇÕES DE IMPRESSÃO / PDF */
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+                padding: 0;
+                margin: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+            th {
+                background-color: #0288d1 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            tr.row-no_horario { background-color: #e8f5e9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            tr.row-atrasado { background-color: #fffde7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            tr.row-falta_justificada { background-color: #e3f2fd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            tr.row-falta_injustificada { background-color: #ffebee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            .meta-input {
+                border: none;
+                background: transparent;
+                padding: 0;
+            }
+            select, .obs-input, .time-input {
+                border: none;
+                background-image: none !important;
+                padding: 0;
+                background-color: transparent !important;
+                color: #000 !important;
+                appearance: none;
+            }
+            select option:not(:checked) {
+                display: none;
+            }
+            .card {
+                background: #f8f9fa !important;
+                border: 1px solid #e0e0e0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .time-input { color: #000 !important; opacity: 1; }
+            .time-input::placeholder { color: transparent; }
+            .system-credits {
+                color: #555555 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Topo Técnico -->
+        <div class="header">
+            <div class="header-title">
+                <h1>Controle de Frequência Diária</h1>
+                <p>Equipe de Atendimento / Telemarketing</p>
+            </div>
+            <div class="meta-container">
+                <div class="meta-field">
+                    <span class="meta-label">Data:</span>
+                    <input type="text" class="meta-input date-input" id="current-date" value="--/--/----">
+                </div>
+                <div class="meta-field">
+                    <span class="meta-label">Supervisor:</span>
+                    <input type="text" class="meta-input sup-input" id="supervisor-name" placeholder="Nome do Supervisor" oninput="updateSignature()">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Gerencial / KPIs -->
+        <div class="dashboard">
+            <div class="card card-total">
+                <div class="card-value" id="count-total">0</div>
+                <div class="card-label">Operadores</div>
+            </div>
+            <div class="card card-presenca">
+                <div class="card-value" id="count-no_horario">0</div>
+                <div class="card-label">No Horário</div>
+            </div>
+            <div class="card card-atraso">
+                <div class="card-value" id="count-atrasado">0</div>
+                <div class="card-label">Atrasos</div>
+            </div>
+            <div class="card card-falta-j">
+                <div class="card-value" id="count-falta_justificada">0</div>
+                <div class="card-label">Falta Just.</div>
+            </div>
+            <div class="card card-falta-i">
+                <div class="card-value" id="count-falta_injustificada">0</div>
+                <div class="card-label">Falta Injust.</div>
+            </div>
+            <div class="card card-abs">
+                <div class="card-value" id="kpi-absenteismo">0%</div>
+                <div class="card-label">Absenteísmo</div>
+            </div>
+        </div>
+
+        <!-- Barra de Ferramentas -->
+        <div class="toolbar no-print">
+            <div class="search-container">
+                <input type="text" id="search-box" class="search-input" placeholder="🔍 Buscar operador por nome...">
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-magic" onclick="fillAllPresent()">
+                    ⚡ Preencher em Massa
+                </button>
+                <button class="btn btn-tool" onclick="groupExceptions()">
+                    📊 Agrupar Ocorrências
+                </button>
+                <button class="btn btn-tool" onclick="toggleManagePanel()">
+                    👥 Gerenciar Lista
+                </button>
+                <button class="btn btn-tool" id="btn-dark-mode" onclick="toggleDarkMode()">
+                    🌙 Modo Escuro
+                </button>
+                <button class="btn btn-excel" onclick="exportToCSV()">
+                    📥 Exportar Excel
+                </button>
+                <button class="btn btn-print" onclick="triggerPrint()">
+                    🖨️ Gerar PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Painel de Gerenciamento da Lista -->
+        <div class="manage-panel no-print" id="manage-panel">
+            <h3>Gerenciamento de Operadores da Equipe</h3>
+            <div class="manage-form">
+                <input type="text" id="new-operator-name" class="manage-input" placeholder="Nome completo do novo operador...">
+                <button class="btn btn-print" onclick="addOperator()">Adicionar</button>
+            </div>
+            <div class="roster-list" id="roster-list-container">
+                <!-- Itens da lista entram dinamicamente -->
+            </div>
+        </div>
+        
+        <!-- Tabela Operacional -->
+        <table id="operators-table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Nome do Operador</th>
+                    <th style="width: 18%;">Pontualidade</th>
+                    <th style="width: 14%;">Horário Login</th>
+                    <th style="width: 18%;">Frequência</th>
+                    <th style="width: 20%;">Observações / Justificativa</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Linhas criadas dinamicamente via JS -->
+            </tbody>
+        </table>
+        
+        <!-- Rodapé de Validação -->
+        <div class="footer-signature">
+            <div class="signature-line"></div>
+            <div class="signature-name" id="sig-name">Assinatura do Supervisor</div>
+            <div class="signature-role">Supervisor de Atendimento</div>
+            <div class="signature-timestamp" id="sig-timestamp">Gerado em: --/--/---- às --:--</div>
+        </div>
+
+        <!-- Créditos do Sistema Solicitados -->
+        <div class="system-credits">
+            Sistema desenvolvido por Fábio Roberto Poletto
+        </div>
+    </div>
+
+    <script>
+        // Lista Base Inicial
+        const baseRoster = ["AMANDA GEOVANA COSTA MENDES", "ANNA JULIA PAES CORDEIRO", "ANNIE GABRIELLE DOS ANJOS CASTRO", "ANYELE BEATRIZ DOS SANTOS CRUZ", "EVELLIN CRISTINE MOREIRA REIS", "HENDRICA STEFANY PEREIRA PAVAO COSTA", "INGRID CAMPOS SILVA NUNES", "ISABELLA CASTRO COSTA", "JAINARA MAIRA BASTOS SANTOS", "JHENNIFER MENDES MUNIZ", "JOABE DA SILVA SOUSA", "JOAO GABRIEL MEDEIROS SOUSA", "JUAN CIDRONICO RODRIGUES CHAGAS", "KAUANNY VICTORIA DOS SANTOS LOPES", "LARYSSA SOARES RIBEIRO", "LAURA SOPHIA DA SILVA RABELO", "LETICIA CRISTINA SOUSA DIAS", "MARIA FERNANDA PEREIRA DINIZ", "MARIA MIRIAN MORAES DOS SANTOS", "MAYCON JORDAN RODRIGUES SOARES", "SERENA MARTINS TEIXEIRA"];
+
+        // Carrega ou inicializa a lista de operadores do LocalStorage
+        let currentRoster = JSON.parse(localStorage.getItem('telemarketing_roster')) || baseRoster;
+
+        // Execução Inicial
+        window.onload = function() {
+            initDate();
+            renderTable();
+            renderManagePanelList();
+            
+            if(localStorage.getItem('dark_mode_pref') === 'true') {
+                toggleDarkMode();
+            }
+        };
+
+        function initDate() {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            document.getElementById('current-date').value = `${day}/${month}/${year}`;
+        }
+
+        // Renderiza a tabela operacional baseado na lista ativa
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            currentRoster.sort((a, b) => a.localeCompare(b));
+
+            currentRoster.forEach((name, index) => {
+                const tr = document.createElement('tr');
+                tr.id = `row-${index}`;
+                tr.className = 'operator-row';
+                tr.setAttribute('data-name', name);
+                
+                tr.innerHTML = `
+                    <td class="name-cell">${name}</td>
+                    <td>
+                        <select class="select-pontualidade" data-row="row-${index}" onchange="updateRowStyle(this)">
+                            <option value="">-- Selecione --</option>
+                            <option value="no_horario">No horário</option>
+                            <option value="atrasado">Atrasado</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="time-input" placeholder="--:--" disabled data-row="row-${index}">
+                    </td>
+                    <td>
+                        <select class="select-frequencia" data-row="row-${index}" onchange="updateRowStyle(this)">
+                            <option value="">-- Selecione --</option>
+                            <option value="compareceu">Compareceu</option>
+                            <option value="falta_injustificada">Falta Injustificada</option>
+                            <option value="falta_justificada">Falta Justificada</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="obs-input" placeholder="Observações do dia...">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            recalculateDashboard();
+        }
+
+        // Gerenciador de Estilos e Regras de Negócio
+        function updateRowStyle(element) {
+            const rowId = element.getAttribute('data-row');
+            const row = document.getElementById(rowId);
+            
+            const selectP = row.querySelector('.select-pontualidade');
+            const selectF = row.querySelector('.select-frequencia');
+            const timeInput = row.querySelector('.time-input');
+            
+            if (selectP.value === 'atrasado') {
+                timeInput.disabled = false;
+                timeInput.classList.add('active');
+            } else {
+                timeInput.disabled = true;
+                timeInput.classList.remove('active');
+                timeInput.value = '';
+            }
+            
+            if (selectF.value === 'falta_injustificada' || selectF.value === 'falta_justificada') {
+                selectP.value = '';
+                timeInput.disabled = true;
+                timeInput.classList.remove('active');
+                timeInput.value = '';
+            } else if (selectF.value === 'compareceu' && selectP.value === '') {
+                selectP.value = 'no_horario';
+            } else if (selectP.value === 'no_horario' || selectP.value === 'atrasado') {
+                selectF.value = 'compareceu';
+            }
+            
+            row.className = 'operator-row';
+            if (selectF.value === 'falta_injustificada') row.classList.add('row-falta_injustificada');
+            else if (selectF.value === 'falta_justificada') row.classList.add('row-falta_justificada');
+            else if (selectP.value === 'atrasado') row.classList.add('row-atrasado');
+            else if (selectP.value === 'no_horario') row.classList.add('row-no_horario');
+            
+            recalculateDashboard();
+        }
+
+        // Recalcula Indicadores e KPIs
+        function recalculateDashboard() {
+            let total = currentRoster.length;
+            let noHorario = 0, atrasado = 0, faltaJ = 0, faltaI = 0;
+            
+            document.querySelectorAll('.select-pontualidade').forEach(sel => {
+                if(sel.value === 'no_horario') noHorario++;
+                if(sel.value === 'atrasado') atrasado++;
+            });
+            
+            document.querySelectorAll('.select-frequencia').forEach(sel => {
+                if(sel.value === 'falta_justificada') faltaJ++;
+                if(sel.value === 'falta_injustificada') faltaI++;
+            });
+            
+            document.getElementById('count-total').textContent = total;
+            document.getElementById('count-no_horario').textContent = noHorario;
+            document.getElementById('count-atrasado').textContent = atrasado;
+            document.getElementById('count-falta_justificada').textContent = faltaJ;
+            document.getElementById('count-falta_injustificada').textContent = faltaI;
+            
+            let absPercent = total > 0 ? (((faltaJ + faltaI) / total) * 100).toFixed(1) : 0;
+            document.getElementById('kpi-absenteismo').textContent = `${absPercent}%`;
+        }
+
+        // Preenchimento em Massa
+        function fillAllPresent() {
+            document.querySelectorAll('#table-body tr').forEach(row => {
+                const selectP = row.querySelector('.select-pontualidade');
+                const selectF = row.querySelector('.select-frequencia');
+                
+                if (selectF.value === '' && selectP.value === '') {
+                    selectF.value = 'compareceu';
+                    selectP.value = 'no_horario';
+                    row.className = 'operator-row row-no_horario';
+                }
+            });
+            recalculateDashboard();
+        }
+
+        // Agrupamento de Exceções no topo
+        function groupExceptions() {
+            const tbody = document.getElementById('table-body');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            rows.sort((a, b) => {
+                const aF = a.querySelector('.select-frequencia').value;
+                const aP = a.querySelector('.select-pontualidade').value;
+                const bF = b.querySelector('.select-frequencia').value;
+                const bP = b.querySelector('.select-pontualidade').value;
+                
+                const aWeight = (aF === 'falta_injustificada' || aF === 'falta_justificada' || aP === 'atrasado') ? 1 : 0;
+                const bWeight = (bF === 'falta_injustificada' || bF === 'falta_justificada' || bP === 'atrasado') ? 1 : 0;
+                
+                if (aWeight !== bWeight) return bWeight - aWeight;
+                return a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'));
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Gerenciamento Dinâmico da Lista
+        function toggleManagePanel() {
+            const panel = document.getElementById('manage-panel');
+            panel.classList.toggle('active');
+        }
+
+        function renderManagePanelList() {
+            const container = document.getElementById('roster-list-container');
+            container.innerHTML = '';
+            
+            currentRoster.sort((a, b) => a.localeCompare(b));
+            currentRoster.forEach(name => {
+                const item = document.createElement('div');
+                item.className = 'roster-item';
+                item.innerHTML = `${name} <span class="roster-remove" onclick="removeOperator('${name}')">✕</span>`;
+                container.appendChild(item);
+            });
+        }
+
+        function addOperator() {
+            const input = document.getElementById('new-operator-name');
+            const name = input.value.trim().toUpperCase();
+            
+            if (!name) return;
+            if (currentRoster.includes(name)) {
+                alert("Este operador já consta na lista!");
+                return;
+            }
+            
+            currentRoster.push(name);
+            localStorage.setItem('telemarketing_roster', JSON.stringify(currentRoster));
+            
+            input.value = '';
+            renderTable();
+            renderManagePanelList();
+        }
+
+        function removeOperator(name) {
+            if(!confirm(`Tem certeza que deseja remover o(a) operador(a) ${name} da sua equipe?`)) return;
+            
+            currentRoster = currentRoster.filter(n => n !== name);
+            localStorage.setItem('telemarketing_roster', JSON.stringify(currentRoster));
+            
+            renderTable();
+            renderManagePanelList();
+        }
+
+        // Modo Escuro
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            
+            const isDark = body.classList.contains('dark-mode');
+            localStorage.setItem('dark_mode_pref', isDark);
+            document.getElementById('btn-dark-mode').innerHTML = isDark ? "☀️ Modo Claro" : "🌙 Modo Escuro";
+        }
+
+        // Filtro / Busca em Tempo Real
+        document.getElementById('search-box').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('#table-body tr').forEach(row => {
+                const name = row.getAttribute('data-name').toLowerCase();
+                row.style.display = name.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        function updateSignature() {
+            const nameInput = document.getElementById('supervisor-name').value;
+            document.getElementById('sig-name').textContent = nameInput.trim() || "Assinatura do Supervisor";
+        }
+
+        // Exportação Completa de Dados para Excel
+        function exportToCSV() {
+            const rows = document.querySelectorAll('#table-body tr');
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            
+            csvContent += "Nome do Operador;Pontualidade;Horario Login;Frequencia;Observacoes\n";
+            
+            rows.forEach(row => {
+                const name = row.getAttribute('data-name');
+                const pSel = row.querySelector('.select-pontualidade');
+                const fSel = row.querySelector('.select-frequencia');
+                
+                const pontualidade = pSel.options[pSel.selectedIndex].text;
+                const loginTime = row.querySelector('.time-input').value || "--:--";
+                const frequencia = fSel.options[fSel.selectedIndex].text;
+                const obs = row.querySelector('.obs-input').value || "";
+                
+                csvContent += `"${name}";"${pontualidade}";"${loginTime}";"${frequencia}";"${obs}"\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            const dataDoc = document.getElementById('current-date').value.replace(/\//g, '-');
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `fechamento_kpi_${dataDoc}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Fechamento e Impressão Controlada do PDF
+        function triggerPrint() {
+            const now = new Date();
+            const time = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+            const date = document.getElementById('current-date').value;
+            
+            document.getElementById('sig-timestamp').textContent = `Gerado em: ${date} às ${time}`;
+            window.print();
+        }
+    </script>
+</body>
+</html>
